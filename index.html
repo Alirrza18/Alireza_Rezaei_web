@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>On Time | رزرو نوبت</title>
+  <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <header>
+    <div class="logo">✦ On Time</div>
+    <nav>
+      <a onclick="go('home')">خانه</a>
+      <a onclick="go('booking')">رزرو نوبت</a>
+    </nav>
+    <div id="hbtn"></div>
+  </header>
+
+  <!-- خانه -->
+  <section id="home" class="page active">
+    <div class="hero">
+      <h1>رزرو نوبت<br/>آنلاین</h1>
+      <p>بدون معطلی، بدون تماس تلفنی</p>
+      <button class="btn" onclick="go('booking')">رزرو کن</button>
+    </div>
+  </section>
+
+  <!-- ورود / ثبت‌نام -->
+  <section id="auth" class="page">
+    <div class="card auth-card">
+      <div class="tabs">
+        <button id="t-login" class="tab on" onclick="tab('login')">ورود</button>
+        <button id="t-reg"   class="tab"    onclick="tab('reg')">ثبت‌نام</button>
+      </div>
+      <div id="f-login">
+        <input id="l-phone" placeholder="شماره موبایل" maxlength="11" />
+        <input id="l-pass"  placeholder="رمز عبور" type="password" />
+        <p class="err" id="l-err"></p>
+        <button class="btn full" onclick="login()">ورود</button>
+        <p class="hint">حساب ندارید؟ <a onclick="tab('reg')">ثبت‌نام</a></p>
+      </div>
+      <div id="f-reg" style="display:none">
+        <input id="r-name"  placeholder="نام و نام خانوادگی" />
+        <input id="r-phone" placeholder="شماره موبایل" maxlength="11" />
+        <input id="r-pass"  placeholder="رمز عبور (حداقل ۶ کاراکتر)" type="password" />
+        <p class="err" id="r-err"></p>
+        <button class="btn full" onclick="register()">ثبت‌نام</button>
+        <p class="hint">حساب دارید؟ <a onclick="tab('login')">ورود</a></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- رزرو -->
+  <section id="booking" class="page">
+    <div class="wrap">
+      <h2>رزرو نوبت</h2>
+      <div class="card">
+        <div class="cal-nav">
+          <button onclick="prevM()">‹</button>
+          <span id="cal-title"></span>
+          <button onclick="nextM()">›</button>
+        </div>
+        <div class="cal-head">
+          <span>ش</span><span>ی</span><span>د</span><span>س</span><span>چ</span><span>پ</span><span>ج</span>
+        </div>
+        <div id="cal-grid"></div>
+      </div>
+      <div class="card" id="times" style="display:none">
+        <h3>ساعت‌های خالی — <span id="date-lbl"></span></h3>
+        <p class="group-lbl">🌅 صبح  ۸:۰۰ تا ۱۴:۰۰</p>
+        <div class="slots" id="slots-am"></div>
+        <div class="lunch">— وقفه ناهار  ۱۴:۰۰ تا ۱۶:۰۰ —</div>
+        <p class="group-lbl">🌆 بعدازظهر  ۱۶:۰۰ تا ۲۱:۰۰</p>
+        <div class="slots" id="slots-pm"></div>
+      </div>
+      <div class="card confirm-bar" id="confirm" style="display:none">
+        <span id="confirm-txt"></span>
+        <button class="btn" onclick="doBook()">تأیید رزرو</button>
+      </div>
+      <div id="my-list"></div>
+    </div>
+  </section>
+
+  <div id="toast"></div>
+  <script src="app.js"></script>
+</body>
+</html>

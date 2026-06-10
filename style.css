@@ -1,0 +1,140 @@
+/* پایه */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg:     #0f0e0e;
+  --surf:   #1a1917;
+  --gold:   #c9a84c;
+  --goldf:  rgba(201,168,76,.15);
+  --text:   #f0ede8;
+  --muted:  #7a756d;
+  --border: rgba(255,255,255,.09);
+  --err:    #e05c5c;
+  --r:      12px;
+}
+body { font-family: 'Vazirmatn', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; line-height: 1.6; }
+
+/* هدر */
+header {
+  position: fixed; top: 0; width: 100%; z-index: 99;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: .9rem 2rem;
+  background: rgba(15,14,14,.88); backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+}
+.logo { color: var(--gold); font-weight: 700; font-size: 1.2rem; }
+nav a { color: var(--muted); cursor: pointer; margin-right: 1.2rem; font-size: .9rem; text-decoration: none; transition: color .2s; }
+nav a:hover { color: var(--text); }
+
+/* دکمه‌ها */
+.btn {
+  background: var(--gold); color: #0f0e0e;
+  border: none; padding: .7rem 1.6rem; border-radius: 8px;
+  font-family: inherit; font-weight: 600; font-size: .95rem;
+  cursor: pointer; transition: opacity .2s;
+}
+.btn:hover { opacity: .85; }
+.btn.full { width: 100%; margin-top: .4rem; }
+.btn-out {
+  background: none; border: 1px solid var(--border); color: var(--muted);
+  padding: .45rem 1rem; border-radius: 8px; font-family: inherit;
+  font-size: .85rem; cursor: pointer; transition: color .2s, border-color .2s;
+}
+.btn-out:hover { color: var(--text); border-color: var(--text); }
+
+/* صفحه‌ها */
+.page { display: none; padding-top: 72px; min-height: 100vh; }
+.page.active { display: block; }
+#auth.active { display: flex; align-items: center; justify-content: center; }
+
+/* هیرو */
+.hero { max-width: 500px; margin: 6rem auto; padding: 0 2rem; }
+.hero h1 { font-size: clamp(2.5rem,6vw,4rem); font-weight: 700; line-height: 1.2; margin-bottom: 1rem; }
+.hero p  { color: var(--muted); margin-bottom: 2rem; }
+
+/* کارت */
+.card {
+  background: var(--surf); border: 1px solid var(--border);
+  border-radius: var(--r); padding: 1.4rem; margin-bottom: 1.2rem;
+}
+.auth-card { width: 100%; max-width: 360px; }
+
+/* تب‌های ورود */
+.tabs { display: flex; border-bottom: 1px solid var(--border); margin-bottom: 1.4rem; }
+.tab { flex: 1; background: none; border: none; color: var(--muted); font-family: inherit; font-size: .95rem; padding: .55rem; cursor: pointer; border-bottom: 2px solid transparent; transition: color .2s, border-color .2s; }
+.tab.on { color: var(--gold); border-bottom-color: var(--gold); }
+
+/* فیلدها */
+input {
+  display: block; width: 100%;
+  background: rgba(255,255,255,.04); border: 1px solid var(--border);
+  border-radius: 8px; padding: .65rem .85rem; color: var(--text);
+  font-family: inherit; font-size: .92rem; outline: none;
+  transition: border-color .2s; margin-bottom: .8rem;
+}
+input:focus { border-color: var(--gold); }
+.err  { color: var(--err);   font-size: .8rem; min-height: 1rem; margin-bottom: .4rem; }
+.hint { color: var(--muted); font-size: .83rem; text-align: center; margin-top: .8rem; }
+.hint a { color: var(--gold); cursor: pointer; }
+
+/* رزرو */
+.wrap { max-width: 660px; margin: 0 auto; padding: 2.5rem 1.2rem; }
+.wrap h2 { font-size: 1.6rem; margin-bottom: 1.4rem; }
+
+/* تقویم */
+.cal-nav { display: flex; align-items: center; justify-content: space-between; margin-bottom: .9rem; }
+.cal-nav button { background: rgba(255,255,255,.05); border: 1px solid var(--border); color: var(--text); width: 32px; height: 32px; border-radius: 7px; font-size: 1.1rem; cursor: pointer; }
+.cal-nav button:hover { background: var(--goldf); }
+.cal-head { display: grid; grid-template-columns: repeat(7,1fr); text-align: center; margin-bottom: .4rem; }
+.cal-head span { color: var(--muted); font-size: .78rem; padding: .2rem 0; }
+#cal-grid { display: grid; grid-template-columns: repeat(7,1fr); gap: 3px; }
+.day {
+  text-align: center; padding: .45rem .1rem; border-radius: 7px;
+  cursor: pointer; font-size: .88rem; border: 1px solid transparent;
+  transition: background .15s;
+}
+.day:hover:not(.past):not(.empty) { background: var(--goldf); }
+.day.today    { color: var(--gold); font-weight: 700; }
+.day.selected { background: var(--gold); color: #0f0e0e; font-weight: 700; }
+.day.past     { opacity: .35; cursor: default; }
+.day.empty    { cursor: default; }
+
+/* ساعت‌ها */
+#times h3 { font-size: .98rem; margin-bottom: 1rem; }
+.group-lbl { font-size: .78rem; color: var(--muted); margin-bottom: .5rem; }
+.slots { display: flex; flex-wrap: wrap; gap: .45rem; margin-bottom: .8rem; }
+.slot {
+  padding: .4rem .85rem; border-radius: 7px; font-size: .86rem; cursor: pointer;
+  background: rgba(255,255,255,.05); border: 1px solid var(--border);
+  transition: all .15s;
+}
+.slot:hover:not(.taken) { border-color: var(--gold); color: var(--gold); }
+.slot.picked { background: var(--gold); color: #0f0e0e; border-color: var(--gold); font-weight: 600; }
+.slot.taken  { opacity: .3; cursor: not-allowed; text-decoration: line-through; }
+.lunch { font-size: .76rem; color: var(--muted); text-align: center; padding: .4rem 0; margin: .2rem 0 .7rem; border-top: 1px dashed var(--border); border-bottom: 1px dashed var(--border); }
+
+/* تأیید */
+.confirm-bar { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: .8rem; background: var(--goldf); border-color: var(--gold); }
+
+/* رزروها */
+#my-list h3 { color: var(--muted); font-size: .95rem; margin-bottom: .8rem; }
+.b-item {
+  display: flex; align-items: center; justify-content: space-between;
+  background: var(--surf); border: 1px solid var(--border);
+  border-radius: 10px; padding: .75rem 1rem; margin-bottom: .5rem; font-size: .86rem;
+}
+.b-item span { color: var(--gold); }
+.b-item button { background: none; border: none; color: var(--err); font-family: inherit; font-size: .8rem; cursor: pointer; }
+
+/* توست */
+#toast {
+  position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%);
+  background: var(--gold); color: #0f0e0e;
+  padding: .6rem 1.4rem; border-radius: 30px; font-weight: 600; font-size: .88rem;
+  opacity: 0; pointer-events: none; transition: opacity .3s; z-index: 999;
+}
+#toast.show { opacity: 1; }
+
+@media (max-width: 560px) {
+  header { padding: .9rem 1rem; }
+  nav { display: none; }
+}
