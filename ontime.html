@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>On Time | رزرو نوبت</title>
+  <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;600;700&display=swap" rel="stylesheet" />
+  <style>
+/* پایه */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg:     #0f0e0e;
+  --surf:   #1a1917;
+  --gold:   #c9a84c;
+  --goldf:  rgba(201,168,76,.15);
+  --text:   #f0ede8;
+  --muted:  #7a756d;
+  --border: rgba(255,255,255,.09);
+  --err:    #e05c5c;
+  --r:      12px;
+}
+body { font-family: 'Vazirmatn', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; line-height: 1.6; }
+
+/* هدر */
+header {
+  position: fixed; top: 0; width: 100%; z-index: 99;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: .9rem 2rem;
+  background: rgba(15,14,14,.88); backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+}
+.logo { color: var(--gold); font-weight: 700; font-size: 1.2rem; }
+nav a { color: var(--muted); cursor: pointer; margin-right: 1.2rem; font-size: .9rem; text-decoration: none; transition: color .2s; }
+nav a:hover { color: var(--text); }
+
+/* دکمه‌ها */
+.btn {
+  background: var(--gold); color: #0f0e0e;
+  border: none; padding: .7rem 1.6rem; border-radius: 8px;
+  font-family: inherit; font-weight: 600; font-size: .95rem;
+  cursor: pointer; transition: opacity .2s;
+}
+.btn:hover { opacity: .85; }
+.btn.full { width: 100%; margin-top: .4rem; }
+.btn-out {
+  background: none; border: 1px solid var(--border); color: var(--muted);
+  padding: .45rem 1rem; border-radius: 8px; font-family: inherit;
+  font-size: .85rem; cursor: pointer; transition: color .2s, border-color .2s;
+}
+.btn-out:hover { color: var(--text); border-color: var(--text); }
+
+/* صفحه‌ها */
+.page { display: none; padding-top: 72px; min-height: 100vh; }
+.page.active { display: block; }
+#auth.active { display: flex; align-items: center; justify-content: center; }
+
+/* هیرو */
+.hero { max-width: 500px; margin: 6rem auto; padding: 0 2rem; }
+.hero h1 { font-size: clamp(2.5rem,6vw,4rem); font-weight: 700; line-height: 1.2; margin-bottom: 1rem; }
+.hero p  { color: var(--muted); margin-bottom: 2rem; }
+
+/* کارت */
+.card {
+  background: var(--surf); border: 1px solid var(--border);
+  border-radius: var(--r); padding: 1.4rem; margin-bottom: 1.2rem;
+}
+.auth-card { width: 100%; max-width: 360px; }
+
+/* تب‌های ورود */
+.tabs { display: flex; border-bottom: 1px solid var(--border); margin-bottom: 1.4rem; }
+.tab { flex: 1; background: none; border: none; color: var(--muted); font-family: inherit; font-size: .95rem; padding: .55rem; cursor: pointer; border-bottom: 2px solid transparent; transition: color .2s, border-color .2s; }
+.tab.on { color: var(--gold); border-bottom-color: var(--gold); }
+
+/* فیلدها */
+input {
+  display: block; width: 100%;
+  background: rgba(255,255,255,.04); border: 1px solid var(--border);
+  border-radius: 8px; padding: .65rem .85rem; color: var(--text);
+  font-family: inherit; font-size: .92rem; outline: none;
+  transition: border-color .2s; margin-bottom: .8rem;
+}
+input:focus { border-color: var(--gold); }
+.err  { color: var(--err);   font-size: .8rem; min-height: 1rem; margin-bottom: .4rem; }
+.hint { color: var(--muted); font-size: .83rem; text-align: center; margin-top: .8rem; }
+.hint a { color: var(--gold); cursor: pointer; }
+
+/* رزرو */
+.wrap { max-width: 660px; margin: 0 auto; padding: 2.5rem 1.2rem; }
+.wrap h2 { font-size: 1.6rem; margin-bottom: 1.4rem; }
+
+/* تقویم */
+.cal-nav { display: flex; align-items: center; justify-content: space-between; margin-bottom: .9rem; }
+.cal-nav button { background: rgba(255,255,255,.05); border: 1px solid var(--border); color: var(--text); width: 32px; height: 32px; border-radius: 7px; font-size: 1.1rem; cursor: pointer; }
+.cal-nav button:hover { background: var(--goldf); }
+.cal-head { display: grid; grid-template-columns: repeat(7,1fr); text-align: center; margin-bottom: .4rem; }
+.cal-head span { color: var(--muted); font-size: .78rem; padding: .2rem 0; }
+#cal-grid { display: grid; grid-template-columns: repeat(7,1fr); gap: 3px; }
+.day {
+  text-align: center; padding: .45rem .1rem; border-radius: 7px;
+  cursor: pointer; font-size: .88rem; border: 1px solid transparent;
+  transition: background .15s;
+}
+.day:hover:not(.past):not(.empty) { background: var(--goldf); }
+.day.today    { color: var(--gold); font-weight: 700; }
+.day.selected { background: var(--gold); color: #0f0e0e; font-weight: 700; }
+.day.past     { opacity: .35; cursor: default; }
+.day.empty    { cursor: default; }
+
+/* ساعت‌ها */
+#times h3 { font-size: .98rem; margin-bottom: 1rem; }
+.group-lbl { font-size: .78rem; color: var(--muted); margin-bottom: .5rem; }
+.slots { display: flex; flex-wrap: wrap; gap: .45rem; margin-bottom: .8rem; }
+.slot {
+  padding: .4rem .85rem; border-radius: 7px; font-size: .86rem; cursor: pointer;
+  background: rgba(255,255,255,.05); border: 1px solid var(--border);
+  transition: all .15s;
+}
+.slot:hover:not(.taken) { border-color: var(--gold); color: var(--gold); }
+.slot.picked { background: var(--gold); color: #0f0e0e; border-color: var(--gold); font-weight: 600; }
+.slot.taken  { opacity: .3; cursor: not-allowed; text-decoration: line-through; }
+.lunch { font-size: .76rem; color: var(--muted); text-align: center; padding: .4rem 0; margin: .2rem 0 .7rem; border-top: 1px dashed var(--border); border-bottom: 1px dashed var(--border); }
+
+/* تأیید */
+.confirm-bar { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: .8rem; background: var(--goldf); border-color: var(--gold); }
+
+/* رزروها */
+#my-list h3 { color: var(--muted); font-size: .95rem; margin-bottom: .8rem; }
+.b-item {
+  display: flex; align-items: center; justify-content: space-between;
+  background: var(--surf); border: 1px solid var(--border);
+  border-radius: 10px; padding: .75rem 1rem; margin-bottom: .5rem; font-size: .86rem;
+}
+.b-item span { color: var(--gold); }
+.b-item button { background: none; border: none; color: var(--err); font-family: inherit; font-size: .8rem; cursor: pointer; }
+
+/* توست */
+#toast {
+  position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%);
+  background: var(--gold); color: #0f0e0e;
+  padding: .6rem 1.4rem; border-radius: 30px; font-weight: 600; font-size: .88rem;
+  opacity: 0; pointer-events: none; transition: opacity .3s; z-index: 999;
+}
+#toast.show { opacity: 1; }
+
+@media (max-width: 560px) {
+  header { padding: .9rem 1rem; }
+  nav { display: none; }
+}
+  </style>
+</head>
+<body>
+
+  <header>
+    <div class="logo">✦ On Time</div>
+    <nav>
+      <a onclick="go('home')">خانه</a>
+      <a onclick="go('booking')">رزرو نوبت</a>
+    </nav>
+    <div id="hbtn"></div>
+  </header>
+
+  <!-- خانه -->
+  <section id="home" class="page active">
+    <div class="hero">
+      <h1>رزرو نوبت<br/>آنلاین</h1>
+      <p>بدون معطلی، بدون تماس تلفنی</p>
+      <button class="btn" onclick="go('booking')">رزرو کن</button>
+    </div>
+  </section>
+
+  <!-- ورود / ثبت‌نام -->
+  <section id="auth" class="page">
+    <div class="card auth-card">
+      <div class="tabs">
+        <button id="t-login" class="tab on" onclick="tab('login')">ورود</button>
+        <button id="t-reg"   class="tab"    onclick="tab('reg')">ثبت‌نام</button>
+      </div>
+      <div id="f-login">
+        <input id="l-phone" placeholder="شماره موبایل" maxlength="11" />
+        <input id="l-pass"  placeholder="رمز عبور" type="password" />
+        <p class="err" id="l-err"></p>
+        <button class="btn full" onclick="login()">ورود</button>
+        <p class="hint">حساب ندارید؟ <a onclick="tab('reg')">ثبت‌نام</a></p>
+      </div>
+      <div id="f-reg" style="display:none">
+        <input id="r-name"  placeholder="نام و نام خانوادگی" />
+        <input id="r-phone" placeholder="شماره موبایل" maxlength="11" />
+        <input id="r-pass"  placeholder="رمز عبور (حداقل ۶ کاراکتر)" type="password" />
+        <p class="err" id="r-err"></p>
+        <button class="btn full" onclick="register()">ثبت‌نام</button>
+        <p class="hint">حساب دارید؟ <a onclick="tab('login')">ورود</a></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- رزرو -->
+  <section id="booking" class="page">
+    <div class="wrap">
+      <h2>رزرو نوبت</h2>
+      <div class="card">
+        <div class="cal-nav">
+          <button onclick="prevM()">‹</button>
+          <span id="cal-title"></span>
+          <button onclick="nextM()">›</button>
+        </div>
+        <div class="cal-head">
+          <span>ش</span><span>ی</span><span>د</span><span>س</span><span>چ</span><span>پ</span><span>ج</span>
+        </div>
+        <div id="cal-grid"></div>
+      </div>
+      <div class="card" id="times" style="display:none">
+        <h3>ساعت‌های خالی — <span id="date-lbl"></span></h3>
+        <p class="group-lbl">🌅 صبح  ۸:۰۰ تا ۱۴:۰۰</p>
+        <div class="slots" id="slots-am"></div>
+        <div class="lunch">— وقفه ناهار  ۱۴:۰۰ تا ۱۶:۰۰ —</div>
+        <p class="group-lbl">🌆 بعدازظهر  ۱۶:۰۰ تا ۲۱:۰۰</p>
+        <div class="slots" id="slots-pm"></div>
+      </div>
+      <div class="card confirm-bar" id="confirm" style="display:none">
+        <span id="confirm-txt"></span>
+        <button class="btn" onclick="doBook()">تأیید رزرو</button>
+      </div>
+      <div id="my-list"></div>
+    </div>
+  </section>
+
+  <div id="toast"></div>
+  <script>
+// ذخیره‌سازی
+const S = k => JSON.parse(localStorage.getItem(k));
+const W = (k,v) => localStorage.setItem(k, JSON.stringify(v));
+
+let user     = S('user')     || null;
+let users    = S('users')    || [];
+let bookings = S('bookings') || [];
+let selDate  = null, selTime = null;
+
+// تقویم جلالی
+function toJalali(gy,gm,gd){
+  const g=[0,31,59,90,120,151,181,212,243,273,304,334];
+  let y=gy-1600; gm--; gd--;
+  let d=y*365+Math.floor((y+3)/4)-Math.floor((y+99)/100)+Math.floor((y+399)/400)+g[gm]+gd;
+  if(gm>1&&((gy%4===0&&gy%100!==0)||gy%400===0))d++;
+  let jd=d-79,np=Math.floor(jd/12053); jd%=12053;
+  let jy=979+33*np+4*Math.floor(jd/1461); jd%=1461;
+  if(jd>=366){jy+=Math.floor((jd-1)/365);jd=(jd-1)%365;}
+  const j=[0,31,62,93,124,155,186,216,246,276,306,336];
+  let jm=0; while(jm<11&&jd>=j[jm+1])jm++;
+  return [jy,jm+1,jd-j[jm]+1];
+}
+function toGregorian(jy,jm,jd){
+  jy+=1595; jm--;
+  const j=[0,31,62,93,124,155,186,216,246,276,306,336];
+  let d=-355779+365*jy+Math.floor(jy/33)*8+Math.floor((jy%33+3)/4)+j[jm]+jd;
+  let gy=400*Math.floor(d/146097); d%=146097;
+  if(d>36524){gy+=100*Math.floor(--d/36524);d%=36524;if(d>=365)d++;}
+  gy+=4*Math.floor(d/1461); d%=1461;
+  if(d>365){gy+=Math.floor((d-1)/365);d=(d-1)%365;}
+  const s=[0,31,59,90,120,151,181,212,243,273,304,334,365];
+  let m=0; while(m<12&&d>=s[m+1])m++;
+  return [gy,m+1,d-s[m]+1];
+}
+
+const MN=['فروردین','اردیبهشت','خرداد','تیر','مرداد','شهریور','مهر','آبان','آذر','دی','بهمن','اسفند'];
+const jNow=()=>{ const n=new Date(); return toJalali(n.getFullYear(),n.getMonth()+1,n.getDate()); };
+const jDays=(y,m)=>m<=6?31:m<=11?30:29;
+const el=id=>document.getElementById(id);
+const ds=(y,m,d)=>y+'-'+String(m).padStart(2,'0')+'-'+String(d).padStart(2,'0');
+
+let [cY,cM]=jNow();
+
+// ساعت‌های کاری
+const AM=[],PM=[];
+for(let h=8;h<14;h++){AM.push(h+':00',h+':30');}
+for(let h=16;h<=21;h++){PM.push(h+':00');if(h<21)PM.push(h+':30');}
+
+// پر کردن رندوم ساعت‌های اشغال
+function seed(){
+  if(S('s4'))return;
+  let [y,m,d]=jNow();
+  for(let i=0;i<10;i++){
+    const date=ds(y,m,d);
+    [...AM,...PM].sort(()=>Math.random()-.5).slice(0,4+Math.floor(Math.random()*4))
+      .forEach(t=>bookings.push({id:Math.random(),user:'__',date,time:t}));
+    if(++d>jDays(y,m)){d=1;if(++m>12){m=1;y++;}}
+  }
+  W('bookings',bookings); W('s4',1);
+}
+
+// ناوبری
+function go(id){
+  if(id==='booking'&&!user){go('auth');toast('ابتدا وارد حساب خود شوید');return;}
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  el(id).classList.add('active');
+  window.scrollTo({top:0,behavior:'smooth'});
+  if(id==='booking'){drawCal();drawMyList();}
+}
+
+// هدر
+function drawHeader(){
+  el('hbtn').innerHTML = user
+    ? `<span style="color:var(--muted);font-size:.83rem">سلام ${user.name.split(' ')[0]}</span> <button class="btn-out" onclick="logout()">خروج</button>`
+    : `<button class="btn" onclick="go('auth')">ورود / ثبت‌نام</button>`;
+}
+
+// تب‌های ورود
+function tab(t){
+  el('f-login').style.display = t==='login'?'':'none';
+  el('f-reg').style.display   = t==='reg'  ?'':'none';
+  el('t-login').className='tab'+(t==='login'?' on':'');
+  el('t-reg').className  ='tab'+(t==='reg'  ?' on':'');
+  el('l-err').textContent=el('r-err').textContent='';
+}
+
+// احراز هویت
+function login(){
+  const phone=el('l-phone').value.trim(), pass=el('l-pass').value;
+  const u=users.find(u=>u.phone===phone&&u.pass===pass);
+  if(!u)return el('l-err').textContent='شماره یا رمز اشتباه است';
+  doLogin(u);
+}
+function register(){
+  const name=el('r-name').value.trim(),phone=el('r-phone').value.trim(),pass=el('r-pass').value;
+  const err=el('r-err');
+  if(!name||!phone||!pass)           return err.textContent='همه فیلدها را پر کنید';
+  if(!/^09\d{9}$/.test(phone))       return err.textContent='شماره موبایل صحیح نیست';
+  if(pass.length<6)                  return err.textContent='رمز حداقل ۶ کاراکتر باشد';
+  if(users.find(u=>u.phone===phone)) return err.textContent='این شماره قبلاً ثبت شده';
+  const u={name,phone,pass}; users.push(u); W('users',users); doLogin(u);
+}
+function doLogin(u){user=u;W('user',u);drawHeader();go('booking');toast('خوش آمدید '+u.name.split(' ')[0]);}
+function logout(){user=null;localStorage.removeItem('user');selDate=selTime=null;drawHeader();go('home');toast('خارج شدید');}
+
+// تقویم
+function drawCal(){
+  const [ty,tm,td]=jNow(), total=jDays(cY,cM);
+  const [gy1,gm1,gd1]=toGregorian(cY,cM,1);
+  const offset=(new Date(gy1,gm1-1,gd1).getDay()+1)%7;
+  el('cal-title').textContent=MN[cM-1]+' '+cY;
+  const grid=el('cal-grid'); grid.innerHTML='';
+  for(let i=0;i<offset;i++) grid.insertAdjacentHTML('beforeend','<div class="day empty"></div>');
+  for(let d=1;d<=total;d++){
+    const date=ds(cY,cM,d);
+    const past=(cY<ty)||(cY===ty&&cM<tm)||(cY===ty&&cM===tm&&d<td);
+    const cls=['day',past?'past':'',cY===ty&&cM===tm&&d===td?'today':'',date===selDate?'selected':''].join(' ').trim();
+    const div=document.createElement('div'); div.className=cls; div.textContent=d;
+    if(!past) div.onclick=()=>pickDate(date,d);
+    grid.appendChild(div);
+  }
+}
+function prevM(){if(--cM<1){cM=12;cY--;}reset();}
+function nextM(){if(++cM>12){cM=1;cY++;}reset();}
+function reset(){selDate=selTime=null;el('times').style.display=el('confirm').style.display='none';drawCal();}
+
+function pickDate(date,day){
+  selDate=date; selTime=null; drawCal();
+  el('date-lbl').textContent=day+' '+MN[cM-1];
+  fillSlots('slots-am',AM,date); fillSlots('slots-pm',PM,date);
+  el('times').style.display=''; el('confirm').style.display='none';
+  setTimeout(()=>el('times').scrollIntoView({behavior:'smooth',block:'nearest'}),50);
+}
+
+// ساعت‌ها
+function fillSlots(id,hours,date){
+  el(id).innerHTML='';
+  hours.forEach(h=>{
+    const s=document.createElement('div');
+    s.className='slot'; s.textContent=h;
+    if(bookings.some(b=>b.date===date&&b.time===h)) s.classList.add('taken');
+    else s.onclick=()=>{
+      document.querySelectorAll('.slot').forEach(x=>x.classList.remove('picked'));
+      s.classList.add('picked'); selTime=h;
+      const p=selDate.split('-');
+      el('confirm-txt').textContent=`📅 ${+p[2]} ${MN[+p[1]-1]} ${p[0]}  ⏰ ${h}`;
+      el('confirm').style.display='flex';
+      setTimeout(()=>el('confirm').scrollIntoView({behavior:'smooth',block:'nearest'}),50);
+    };
+    el(id).appendChild(s);
+  });
+}
+
+// رزرو
+function doBook(){
+  if(!selDate||!selTime)return;
+  bookings.push({id:Date.now(),user:user.phone,date:selDate,time:selTime});
+  W('bookings',bookings); toast('نوبت رزرو شد ✓');
+  selDate=selTime=null; el('times').style.display=el('confirm').style.display='none';
+  drawCal(); drawMyList();
+}
+
+// لیست رزروها
+function drawMyList(){
+  const list=bookings.filter(b=>b.user===user.phone).sort((a,b)=>a.date.localeCompare(b.date));
+  el('my-list').innerHTML = list.length
+    ? '<h3>رزروهای شما</h3>'+list.map(b=>{
+        const p=b.date.split('-');
+        return `<div class="b-item"><span>📅 ${+p[2]} ${MN[+p[1]-1]} — ساعت ${b.time}</span><button onclick="cancel(${b.id})">لغو</button></div>`;
+      }).join('')
+    : '';
+}
+function cancel(id){
+  bookings=bookings.filter(b=>b.id!==id); W('bookings',bookings);
+  drawMyList(); drawCal();
+  if(selDate){const p=selDate.split('-');pickDate(selDate,+p[2]);}
+  toast('نوبت لغو شد');
+}
+
+// توست
+function toast(msg){el('toast').textContent=msg;el('toast').classList.add('show');setTimeout(()=>el('toast').classList.remove('show'),2600);}
+
+// شروع
+seed(); drawHeader();
+user ? go('booking') : drawCal();
+  </script>
+</body>
+</html>
